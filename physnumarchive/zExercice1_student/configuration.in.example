@@ -1,0 +1,16 @@
+% Parametres physiques :
+mF       = 2600000 % mass de la fusee[kg]
+D_f      = 10000   % debit massique de propulseurs [kg/s]
+v_e      = 4200    % vitesse d’ ejection [m/s]
+tfin     = 120     % temps de combustion  [s]
+rho_0    = 1.2     % air density on the ground [kg/m3]
+Cx       = 0.35 % coefficient  aerodynamique[kg/m3]
+Surf     = 110     % surface de section  [m2]
+lambda   = 10000   % factoure decadiment densite [m]
+g0       = 9.81    % acceleration de la pesanteur [m/s2]
+
+
+% Parametres numeriques :
+nsteps   = 320   % nombre de pas de temps maximal (dt=tfin/nsteps)
+output   = output.out   % nome/adresse du fichier d'output
+sampling = 0            % nombre de pas de temps entre deux ecritures, no sampling = 0

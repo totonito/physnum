@@ -1,0 +1,14 @@
+tFin = 10// t final (overwritten if N >0)
+kappa = 0.05 //
+m = 0.1
+L = 0.2
+g = 9.81
+d = 0.05
+Omega = 50 //frequency of the forcing term
+theta0 = 3.1405926535897932384626433832795028 // initial condition in theta 
+thetadot0 = 0 //initial condition in thetadot
+dt = 0.001 //time step (overwritten is nstep >0)
+output = output_example.out
+sampling = 1 //frequency of data writing
+N = 40 // number of excitation periods
+nstep = 0 //number of time steps per period

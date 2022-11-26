@@ -1,0 +1,35 @@
+EN GROS pour utiliser git 
+1) tu installes git et appuyes 20 fois sur accepter en essayant de lire mais c pas important, à part si tu veux l'installer à un endroit particulier, il n'y a pas de trucs spéciaux à cocher.
+
+2) tu m'appelles pour lier le repository à git
+sinon c'est : tu accèdes à ton dossier avec cd puis :
+- git init    
+- git remote add origin https://github.com/totonito/TP-phys.git     //c'est ctrl + insert pour faire un coller sur le terminal
+- git branch -M main
+- git pull
+je pense pas que ça va marcher car je l'ai fait qu'une fois et j'ai surement oublié qqc donc bonne chance et les forums sont bien faits 
+
+3) pour ajouter qqc dans le repository c'est dans l'ordre : 
+-accéder au dossier avec cd 
+-git add .      avec un espace et un point après le add
+-git commit -m 'tu peux mettre un message ici et tu es obligé d_en mettre un'
+-git push
+
+4) pour charger les modifications que j'ai faites c'est : 
+-git pull 
+tu vas faire un git pull toujours avant de commencer à travailler pour pas que tu fasses qqc que j'ai déjà fait
+
+5) si la commande git commit pose un pb et qu'il y a un merge qui apparait apres le main, ça signifie qu'on est en train de bosser sur le meme fichier en meme temps. git va charger sur ton ordi un mix des deux versions où il y aura marqué les endroits qui ont été touchées par nous deux. Il faudra alors garder la version qui te convient en effaçant ce qui te semble louche ça va ressembler à ca et tu vas garder un des deux et effacer trucs en plus (HEAD <<<<<<<<637396287396809027468 je suis bleu <<<<<<<<<<<<<<<<< je suis rouge <<<<<<<<<<<<428239802)  
+puis tu vas refaire un commit -m 'message'
+puis un push
+
+6) Si ya un truc qui fait peur tu peux altF4 mais il explique à peu près clairement quel est le problème. Normalement git est fait pour qu'on ne puisse pas supprimer de données sans qu'il te mette un message qui fait peur
+
+
+L'interet de tout ça c'est que en 3 lignes de code, une fois qu'on sera familiarisé (ce qui sera long et j'ai découvert git dimanche dernier donc je pourrai pas trop aider), tu pourras charger ou déposer des trucs au lieu de faire ça un par un dans drive
+
+
+TIPS : 
+-quand t'appuyes sur tab ça complète automatiquement s'il n'y a qu'un choix, essaies de changer le nom de ton dossier pour faciliter (le faire commencer par un z par exemple)
+-la flèche du haut te permet de chercher une commande précédente
+-Osef des warnings dans beaucoup de cas
