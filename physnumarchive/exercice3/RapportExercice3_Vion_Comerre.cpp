@@ -118,7 +118,6 @@ public:
 
 };
 
-
 int main(int argc, char* argv[])
 {
   Exercice3 engine(argc, argv);

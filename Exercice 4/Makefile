@@ -1,27 +1,27 @@
 CC = g++
 CFLAGS = -std=c++0x -Wall -g
-EXEC_NAME_APO = Exercice4_2022_Apollo_solution
-EXEC_NAME_ATM = Exercice4_2022_atmos_solution 
+EXEC_NAME = Exercice2_solution
+EXEC_NAME_STD = Exercice2
 INCLUDES =
 LIBS =
-OBJ_FILES_APO = Exercice4_2022_Apollo_solution.o
-OBJ_FILES_ATM = Exercice4_2022_atmos_solution.o
+OBJ_FILES = Exercice2_solution.o
+OBJ_FILES_STD = Exercice2.o
 EXEC_SUFFIX = .exe
 
 # add suffix to exec
-EXEC_NAME_APO_SUFFIX = $(addsuffix $(EXEC_SUFFIX),$(EXEC_NAME_APO))
-EXEC_NAME_ATM_SUFFIX = $(addsuffix $(EXEC_SUFFIX),$(EXEC_NAME_ATM))
+EXEC_NAME_SUFFIX = $(addsuffix $(EXEC_SUFFIX),$(EXEC_NAME))
+EXEC_NAME_STD_SUFFIX = $(addsuffix $(EXEC_SUFFIX),$(EXEC_NAME_STD))
 
-all : apollo, atmos
+all : solution student
 
 clean :
-	rm $(EXEC_NAME_SUFFIX)  $(OBJ_FILES) *.out
+	rm $(EXEC_NAME_SUFFIX) $(EXEC_NAME_STD_SUFFIX)  $(OBJ_FILES) *.out
  
-apollo : $(OBJ_FILES_APO)
-	$(CC) -o $(EXEC_NAME_APO_SUFFIX) $(OBJ_FILES_APO) $(LIBS)
+solution : $(OBJ_FILES)
+	$(CC) -o $(EXEC_NAME_SUFFIX) $(OBJ_FILES) $(LIBS)
 
-atmos : $(OBJ_FILES_ATM)
-	$(CC) -o $(EXEC_NAME_ATM_SUFFIX) $(OBJ_FILES_ATM) $(LIBS)
+student : $(OBJ_FILES_STD)
+	$(CC) -o $(EXEC_NAME_STD_SUFFIX) $(OBJ_FILES_STD) $(LIBS)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
