@@ -48,14 +48,14 @@ private:
   const double pi = 3.1415926535897932384626433832795028841971e0;
   const double G = 6.674*pow(10,-11);
   const double g = 9.81;
+  const double gamma = 1.4; // si gamma est modifié, la fonction rho doit être changée
   // definition des variables
   double tfin;          // Temps final
   unsigned int nsteps;  // Nombre de pas de temps
   double rho_0; 	 	// parametre rho à l'altitude 0
   double P_0;			// pression au sol
-  double gamma;			// parametre adiabadicite
   double m_t;           // masse de la terre
-  double m_v;			// masse du vaisseau
+  double m_a;			// masse du vaisseau Appolo
   double C_x;			// coefficient de trainee
   double d;				// diametre du vaisseau
   valarray<double> x0=valarray<double>(0.e0,3); // vecteur contenant la position initiale 
@@ -70,30 +70,23 @@ private:
      write: (bool) ecriture de tous les sampling si faux
   */  
   
-  double E_mec(ce que tu as besoin, je pense rien normalement)// TODO calculer l'energie mecanique
-  {}
-  
-  double Pnc(ce que tu as besoin)// TODO calculer la puissance des forces non conservatives
-  {}
-  
-  double rho (ce que tu as besoin)// TODO calculer rho
-  {}
-  
+
   void printOut(bool write)
   { 
     
-	double E_mec = Emec(ce que tu as besoin);
-	double Pnc = Pnc (ce que tu as besoin);
-	double rho = rho(ce que tu as besoin);
+	double Emec_ = Emec();
+	double Pnc_ = Pnc ();
+	double rho_ = rho();
 	valarray<double> acc =valarray<double>(0.e0,3);
 	acceleration(acc);
 	double norme_acc = norm2(acc);
+	
     // Ecriture tous les [sampling] pas de temps, sauf si write est vrai
     if((!write && last>=sampling) || (write && last!=1))
     {
       *outputFile << t << " " << x[0] << " " << x[1] << " " \
       << v[0] << " " << v[1] << " " \
-      << E_mec<< " " << Pnc << " " << rho << " " \
+      << Emec_ << " " << Pnc_ << " " << rho_ << " " \
       << norme_acc << " " << dt << endl; // write output on file
       last = 1;
     }
@@ -115,16 +108,36 @@ protected:
   double t,dt;
   valarray<double> x =valarray<double>(3);
   valarray<double> v =valarray<double>(3);
+
   
   // TODO
   /* Calcul de l'acceleration totale
      output:
        a: (valarray<double>)(3) vecteur acceleration
   */
+  
+    double Emec() const
+  {
+	return 0.5 * m_a * norm2(v) * norm2(v) - ( m_a * m_t * G) / norm2 (x);
+  }
+  
+  double Pnc() const
+  {
+	  return (m_a * m_t * G) * (x[0]*v[0] + x[1]*v[1])/pow(scalarProduct(x,x),3.0/2.0);
+  }
+ 
+  double rho() const // à modifier si gamma est différent de 1.4
+  {
+	  return 1;
+  }
+  
   void acceleration(valarray<double>& a) const
   { 
-    a[0]      = 0.0; // composante x acceleration
-    a[1]      = 0.0; // composante y acceleration
+	double rho_ = rho();
+    a[0]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho_ * v[0] / m_a  \
+                 - (G * m_t * x[0]) / pow(norm2(x),3.0/2.0) ; // composante x acceleration
+    a[1]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho_ * v[1] / m_a  \
+                 - (G * m_t * x[1]) / pow(norm2(x),3.0/2.0) ;  // composante y acceleration
   }
 
 
@@ -147,9 +160,8 @@ public:
     v0[1]    = configFile.get<double>("vy0",v0[1]);       
     rho_0    = configFile.get<double>("rho_0",rho_0);
     P_0      = configFile.get<double>("P_0",P_0);
-	gamma	 = configFile.get<double>("gamma",gamma);
 	m_t		 = configFile.get<double>("m_t",m_t);
-	m_v		 = configFile.get<double>("m_v",m_v);
+	m_a		 = configFile.get<double>("m_a",m_a);
 	C_x		 = configFile.get<double>("C_x",C_x);
 	d		 = configFile.get<double>("d",d);
     sampling = configFile.get<unsigned int>("sampling",sampling); // lire le parametre de sampling
@@ -199,11 +211,18 @@ public:
 
   void step()
   {
-    valarray<double> a =valarray<double>(0.e0,3); //TODO écrire RK4
-    
+    valarray<double> a =valarray<double>(0.e0,3); //TODO écrire RK4 avec rho qui évolue aussi
+    valarray<double> k1_x,k1_v,k2_x,k2_v,k3_x,k3_v,k4_x,k4_v (0.e0,3);
     valarray<double> x_ = x; // position
     valarray<double> v_ = v; // vitesse
-
+    double rho_ = rho();     // rho, réfléchir si on intègre dans l'autre sens, il peut ne pas être ici si c'est pas possible
+    acceleration(a);
+	k1_x = dt * v;
+	k1_v = dt * a;
+	t += dt * 0.5;
+	x += 0.5 * k1_x;
+	v += 0.5 * k1_v;
+	rho_+=0.0;
     x+=0.0;
     v+=0.0;
 
