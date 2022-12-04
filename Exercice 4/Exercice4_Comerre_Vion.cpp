@@ -48,8 +48,8 @@ private:
   const double pi = 3.1415926535897932384626433832795028841971e0;
   const double G = 6.674*pow(10,-11);
   const double g = 9.81;
-  const double gamma = 1.4; // si gamma est modifié, la fonction rho doit être changée
   // definition des variables
+  double gamma; // si gamma est modifié, la fonction rho doit être changée
   double tfin;          // Temps final
   unsigned int nsteps;  // Nombre de pas de temps
   double rho_0; 	 	// parametre rho à l'altitude 0
@@ -58,6 +58,8 @@ private:
   double m_a;			// masse du vaisseau Appolo
   double C_x;			// coefficient de trainee
   double d;				// diametre du vaisseau
+  double K = P_0*pow(rho_0,-1*gamma);
+  
   valarray<double> x0=valarray<double>(0.e0,3); // vecteur contenant la position initiale 
   valarray<double> v0=valarray<double>(0.e0,3); // vecteur contenant la vitesse initiale 
   
@@ -106,8 +108,11 @@ protected:
 
   // donnes internes
   double t,dt;
-  valarray<double> x =valarray<double>(3);
-  valarray<double> v =valarray<double>(3);
+  valarray<double> x =valarray<double>(2);
+  valarray<double> v =valarray<double>(2);
+  double rho_; // sujet a modifications
+  // double z(sqrt(pow(x[0],2.0) + pow(y[0],2))-6378100); // sujet a modifications
+  double dz     = configFile.get<double>("dz",dz);	  
 
   
   // TODO
@@ -126,9 +131,20 @@ protected:
 	  return (m_a * m_t * G) * (x[0]*v[0] + x[1]*v[1])/pow(scalarProduct(x,x),3.0/2.0);
   }
  
-  double rho() const // à modifier si gamma est différent de 1.4
+  double drho(double r=rho_) const // à modifier si gamma est différent de 1.4
   {
-	  return 1;
+	  return (-g/(K*gamma))*pow(r,2-gamma);
+  }
+  
+  void rho()
+  {
+	  double k1(0.0),k2(0.0),k3(0.0),k4(0.0);
+	  double ro(rho);
+	  k1 = dz * drho();
+	  k2 = dz * drho(rho + 0.5 * k1);
+	  k3 = dz * drho(rho + 0.5 * k2);
+	  k4 = dz * drho(rho + 0.5 * k3);
+	  rho_ = ro + (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4);  
   }
   
   void acceleration(valarray<double>& a) const
