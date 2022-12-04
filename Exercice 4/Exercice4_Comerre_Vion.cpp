@@ -48,8 +48,8 @@ private:
   const double pi = 3.1415926535897932384626433832795028841971e0;
   const double G = 6.674*pow(10,-11);
   const double g = 9.81;
-  const double gamma = 1.4; // si gamma est modifié, la fonction rho doit être changée
   // definition des variables
+  double gamma;
   double tfin;          // Temps final
   unsigned int nsteps;  // Nombre de pas de temps
   double rho_0; 	 	// parametre rho à l'altitude 0
@@ -106,8 +106,8 @@ protected:
 
   // donnes internes
   double t,dt;
-  valarray<double> x =valarray<double>(3);
-  valarray<double> v =valarray<double>(3);
+  valarray<double> x =valarray<double>(2);
+  valarray<double> v =valarray<double>(2);
 
   
   // TODO
@@ -164,6 +164,7 @@ public:
 	m_a		 = configFile.get<double>("m_a",m_a);
 	C_x		 = configFile.get<double>("C_x",C_x);
 	d		 = configFile.get<double>("d",d);
+	gamma	 = configFile.get<double>("gamma",gamma);
     sampling = configFile.get<unsigned int>("sampling",sampling); // lire le parametre de sampling
 
     dt = tfin / nsteps; // calculer le time step
