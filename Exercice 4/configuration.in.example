@@ -1,7 +1,9 @@
-tfin = 5e-08
-rho_0 = 0.0
-P_0 = 0.0
-gamma = 0.0
+tfin = 0
+dz = 1
+rho_0 = 1.2	//altitude en z = 0, PAS L'ALTITUDE INITIALE
+P_0 = 100000 //pression en z = 0
+epsilon = 10
+gamma = 1.4
 m_t = 0.0
 m_a = 0.0
 C_x = 0.0
@@ -9,9 +11,8 @@ d = 0.0
 x0 = 0.0
 y0 = 0.0
 vx0 = 0.0
-vy0 = 500000.0
-schema = E
-nsteps = 10.0
+vy0 = 0
+schema = descendre
+nsteps = 0
 output = output_example.out
 sampling = 1
-
