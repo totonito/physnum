@@ -1,18 +1,18 @@
-tfin = 0
+tfin = 259200.0
 dz = 1
-rho_0 = 1.2	//altitude en z = 0, PAS L'ALTITUDE INITIALE
+rho_0 = 0	//altitude en z = 0, PAS L'ALTITUDE INITIALE
 P_0 = 100000 //pression en z = 0
 epsilon = 1
 gamma = 1.4
-m_t = 0.0
-m_a = 0.0
+m_t = 5.972e24
+m_a = 5800.0
 C_x = 0.0
-d = 0.0
-x0 = 0.0
+d = 4.0
+x0 = 310000000.0
 y0 = 0.0
-vx0 = 0.0
-vy0 = 0
-schema = monter
-nsteps = 10000 //NECESSAIRE pour le cas 'descendre' pour que le programme s'arrête à 0, inutile pour le cas 'monter'
+vx0 = -1228.87
+vy0 = 228.867
+schema = RK4
+nsteps = 30000
 output = output_example.out
 sampling = 1
