@@ -1,0 +1,59 @@
+%% Parametres %%
+close all
+repertoire = ''; % Chemin d'accès au code compilé (NB: enlever le ./ sous Windows)
+executable = 'Exercice4_Comerre_Vion_rho.exe';
+input      = 'configuration.in.example';
+g= 9.81;
+fs = 16;
+lw = 2;
+scan_case = "descendre"; % A MODIFIER; 
+
+%paramètres, DOIVENT ETRE IDENTIQUES QUE CEUX DANS LE CONFIGURATION
+gamma = 1.4;
+rho_0 = 1.4;
+P_0 = 100000;
+K = P_0 * rho_0^ (-gamma);
+switch scan_case
+
+    case 'descendre'
+        epsilon = [1 2 5 10 20 50 100 200 500 1000];
+        tfin = 10; %Verifier que la valeur de tfin est EXACTEMENT la meme que dans le fichier input
+        dt = tfin ./ nsteps;
+        paramstr = 'dt'; 
+        param = dt;  
+    
+    case 'monter'
+       
+        tfin = 10;
+        nsteps = [1000 1100 1250 1400 1500 1750 2000 3000 5000 7500 10000];
+        dt = tfin ./ nsteps;
+        dt_carre = dt.^2;
+        paramstr = 'dt'; 
+        param = dt;
+end
+
+nsimul = numel(param);
+
+%% Simulations %% 
+
+output = cell(1, nsimul);
+for i = 1:nsimul
+    output{i} = [paramstr, '=', num2str(param(i)), '.out'];
+    % Execution du programme en lui envoyant la valeur a scanner en argument
+    cmd = sprintf('%s%s %s %s=%.15g output=%s', repertoire, executable, input, paramstr, param(i), output{i});
+    disp(cmd)
+    system(cmd);
+    disp('Done.')
+end
+        
+%% Analyse %%
+error            = zeros(1,nsimul);
+for i = 1:nsimul 
+    data        = load(output{i}); 
+    z           = data(:,1); 
+    rho       = data(:,2);
+     
+   rho_ana = ( rho_0^(gamma-1) - g*z* (gamma-1) /(K*gamma) )^(1/(gamma-1));
+   
+
+end

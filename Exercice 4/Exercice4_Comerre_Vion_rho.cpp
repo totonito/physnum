@@ -9,11 +9,11 @@
 using namespace std; // ouvrir un namespace avec la librerie c++ de base
 
 
-template<typename T> T scalarProduct(valarray<T> const& array1,\
+template<typename T> T scalarProduct(valarray<T> const& array1,
 valarray<T> const& array2){
   // compute and return the norm2 of a valarray
   return (array1*array2).sum();
-} 
+}
 
 template<typename T> T norm2(valarray<T> const& array){
   // compute and return the norm2 of a valarray
@@ -108,6 +108,7 @@ public:
     
     // Stockage des parametres de simulation dans les attributs de la classe
     dz       = configFile.get<double>("dz",dz);
+    nsteps   = configFile.get<double>("nsteps",nsteps);
     rho_0    = configFile.get<double>("rho_0",rho_0);
     P_0      = configFile.get<double>("P_0",P_0);
 	gamma	 = configFile.get<double>("gamma",gamma);
@@ -116,7 +117,7 @@ public:
 
     // Ouverture du fichier de sortie
     outputFile = new ofstream(configFile.get<string>("output","output.out").c_str()); 
-    outputFile->precision(15); // Les nombres seront ecrits avec 15 decimales
+    outputFile->precision(14); // Les nombres seront ecrits avec 15 decimales
   };
 
   // Destructeur virtuel
@@ -147,7 +148,7 @@ public:
 	  k1 = dz * drho(rho);
 	  k2 = dz * drho(rho + 0.5 * k1);
 	  k3 = dz * drho(rho + 0.5 * k2);
-	  k4 = dz * drho(rho + 0.5 * k3);
+	  k4 = dz * drho(rho + k3);
 	  rho += (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4);
     z+=dz;
     
@@ -178,22 +179,23 @@ public:
   void step()
   {
 	  double k1(0.0),k2(0.0),k3(0.0),k4(0.0);
-	  double ro(rho);
+	  
 	  k1 = -dz * drho(rho);
 	  k2 = -dz * drho(rho + 0.5 * k1);
 	  k3 = -dz * drho(rho + 0.5 * k2);
-	  k4 = -dz * drho(rho + 0.5 * k3);
-	  rho = ro + (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4);
+	  k4 = -dz * drho(rho + k3);
+	  rho += (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4);
 	  z -= dz;
   }
     virtual void run() override
   {
-    z = (gamma*P_0/((gamma-1) * rho_0)) - epsilon ;   // initialiser la position
+    z = (gamma*P_0/((gamma-1) * rho_0 * g)) - epsilon ;   // initialiser la position
+    dz = z/nsteps;
     rho = rho_ana(z);//initialiser rho
     last = 0; // initialise le parametre d'ecriture
     printOut(true); // ecrire premier pas de temps
 
-    while( z > 0 )
+    while( z > 1.0e-6 )
     {
       step();  // faire la mise a jour de la simulation 
       printOut(false); // ecrire pas de temps actuel

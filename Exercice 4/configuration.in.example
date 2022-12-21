@@ -2,7 +2,7 @@ tfin = 0
 dz = 1
 rho_0 = 1.2	//altitude en z = 0, PAS L'ALTITUDE INITIALE
 P_0 = 100000 //pression en z = 0
-epsilon = 10
+epsilon = 1
 gamma = 1.4
 m_t = 0.0
 m_a = 0.0
@@ -12,7 +12,7 @@ x0 = 0.0
 y0 = 0.0
 vx0 = 0.0
 vy0 = 0
-schema = descendre
-nsteps = 0
+schema = monter
+nsteps = 10000 //NECESSAIRE pour le cas 'descendre' pour que le programme s'arrête à 0, inutile pour le cas 'monter'
 output = output_example.out
 sampling = 1

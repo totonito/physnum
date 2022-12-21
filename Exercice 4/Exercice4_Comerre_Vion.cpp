@@ -46,7 +46,7 @@ class Engine
 private:
   // definition des constantes
   const double pi = 3.1415926535897932384626433832795028841971e0;
-  const double G = 6.674*pow(10,-11);
+  const double G = 6.674e-11;
   const double g = 9.81;
   // definition des variables
   double gamma; // si gamma est modifié, la fonction rho doit être changée
@@ -58,7 +58,8 @@ private:
   double m_a;			// masse du vaisseau Appolo
   double C_x;			// coefficient de trainee
   double d;				// diametre du vaisseau
-  double K = P_0*pow(rho_0,-1*gamma);
+  // double K = P_0*pow(rho_0,-1*gamma);
+  double dz;
   
   valarray<double> x0=valarray<double>(0.e0,3); // vecteur contenant la position initiale 
   valarray<double> v0=valarray<double>(0.e0,3); // vecteur contenant la vitesse initiale 
@@ -78,7 +79,7 @@ private:
     
 	double Emec_ = Emec();
 	double Pnc_ = Pnc ();
-	double rho_ = rho();
+  double rho_ = rho_ana(norm2(x));
 	valarray<double> acc =valarray<double>(0.e0,3);
 	acceleration(acc);
 	double norme_acc = norm2(acc);
@@ -108,12 +109,12 @@ protected:
 
   // donnes internes
   double t,dt;
-  valarray<double> x =valarray<double>(2);
-  valarray<double> v =valarray<double>(2);
+  valarray<double> x = valarray<double>(2);
+  valarray<double> v = valarray<double>(2);
 
-  double rho_; // sujet a modifications
+  double rho; // sujet a modifications
   // double z(sqrt(pow(x[0],2.0) + pow(y[0],2))-6378100); // sujet a modifications
-  double dz     = configFile.get<double>("dz",dz);	  
+  	  
 
   
   // TODO
@@ -129,32 +130,26 @@ protected:
   
   double Pnc() const
   {
-	  return (m_a * m_t * G) * (x[0]*v[0] + x[1]*v[1])/pow(scalarProduct(x,x),3.0/2.0);
-  }
- 
-  double drho(double r=rho_) const // à modifier si gamma est différent de 1.4
-  {
-	  return (-g/(K*gamma))*pow(r,2-gamma);
+	  return (m_a * m_t * G) * (x[0]*v[0] + x[1]*v[1])/pow(scalarProduct(x,x),1.5);
   }
   
-  void rho()
+  double rho_ana(double z)
   {
-	  double k1(0.0),k2(0.0),k3(0.0),k4(0.0);
-	  double ro(rho);
-	  k1 = dz * drho();
-	  k2 = dz * drho(rho + 0.5 * k1);
-	  k3 = dz * drho(rho + 0.5 * k2);
-	  k4 = dz * drho(rho + 0.5 * k3);
-	  rho_ = ro + (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4);  
+    if (abs(P_0) < 1e-10 || abs(rho_0) < 1e-10)
+      return 0.0;
+    else
+    {
+      double K = P_0*pow(rho_0, -gamma);
+      return pow(pow(rho_0,gamma-1.0) - g*z*(gamma-1.0) / (K*gamma), 1.0/(gamma-1.0)); 
+    }
   }
-  
+
   void acceleration(valarray<double>& a) const
   { 
-	double rho_ = rho();
-    a[0]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho_ * v[0] / m_a  \
-                 - (G * m_t * x[0]) / pow(norm2(x),3.0/2.0) ; // composante x acceleration
-    a[1]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho_ * v[1] / m_a  \
-                 - (G * m_t * x[1]) / pow(norm2(x),3.0/2.0) ;  // composante y acceleration
+    a[0]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho * v[0] / m_a  \
+                 - (G * m_t * x[0]) / pow(norm2(x),3.0) ; // composante x acceleration
+    a[1]      = (-1.0/8.0) * C_x * norm2(v) * pi * d * d * rho * v[1] / m_a  \
+                 - (G * m_t * x[1]) / pow(norm2(x),3.0) ;  // composante y acceleration
   }
 
 
@@ -177,12 +172,14 @@ public:
     v0[1]    = configFile.get<double>("vy0",v0[1]);       
     rho_0    = configFile.get<double>("rho_0",rho_0);
     P_0      = configFile.get<double>("P_0",P_0);
-	m_t		 = configFile.get<double>("m_t",m_t);
-	m_a		 = configFile.get<double>("m_a",m_a);
-	C_x		 = configFile.get<double>("C_x",C_x);
-	d		 = configFile.get<double>("d",d);
-	gamma	 = configFile.get<double>("gamma",gamma);
+	  m_t		 = configFile.get<double>("m_t",m_t);
+	  m_a		 = configFile.get<double>("m_a",m_a);
+	  C_x		 = configFile.get<double>("C_x",C_x);
+	  d		 = configFile.get<double>("d",d);
+	  gamma	 = configFile.get<double>("gamma",gamma);
     sampling = configFile.get<unsigned int>("sampling",sampling); // lire le parametre de sampling
+    dz = configFile.get<double>("dz",dz);
+    
 
     dt = tfin / nsteps; // calculer le time step
 
@@ -207,11 +204,18 @@ public:
     last = 0; // initialise le parametre d'ecriture
     printOut(true); // ecrire premier pas de temps
 
-    for(unsigned int i(0); i<nsteps; ++i) // boucle sur les pas de temps
+    // for(unsigned int i(0); i<nsteps; ++i) // boucle sur les pas de temps
+    // {
+    //   step();  // faire la mise a jour de la simulation 
+    //   printOut(false); // ecrire pas de temps actuel
+    // }
+
+    while (t < tfin) // boucle sur le temps final
     {
       step();  // faire la mise a jour de la simulation 
       printOut(false); // ecrire pas de temps actuel
     }
+
     printOut(true); // ecrire dernier pas de temps
   };
 
@@ -227,25 +231,47 @@ public:
   EngineRungeKutta4(ConfigFile configFile): Engine(configFile) {}
 
 
-  void step()
+  void step() // rk4
   {
     valarray<double> a =valarray<double>(0.e0,3); //TODO écrire RK4 avec rho qui évolue aussi
     valarray<double> k1_x,k1_v,k2_x,k2_v,k3_x,k3_v,k4_x,k4_v (0.e0,3);
     valarray<double> x_ = x; // position
     valarray<double> v_ = v; // vitesse
-    double rho_ = rho();     // rho, réfléchir si on intègre dans l'autre sens, il peut ne pas être ici si c'est pas possible
+    // double rho__ = rho_ana(x);     // rho, réfléchir si on intègre dans l'autre sens, il peut ne pas être ici si c'est pas possible
     acceleration(a);
 	k1_x = dt * v;
 	k1_v = dt * a;
-	t += dt * 0.5;
-	x += 0.5 * k1_x;
-	v += 0.5 * k1_v;
-	rho_+=0.0;
-    x+=0.0;
-    v+=0.0;
 
-    t+=dt;
-    
+	x = x_ + k1_x/2.0;
+	v = v_ + 0.5 * k1_v;
+  rho = rho_ana(norm2(x));
+  acceleration(a); 
+  k2_x = dt * v;
+  k2_v = dt * a;
+
+  x = x_ + 0.5 * k2_x;
+  v = v_ + 0.5 * k2_v;
+  rho = rho_ana(norm2(x));
+  acceleration(a);
+  k3_x = dt * v;
+  k3_v = dt * a;
+
+  x = x_ + k3_x;
+  v += v_ + k3_v;
+  rho = rho_ana(norm2(x));
+  acceleration(a);
+  k4_x = dt * v;
+  k4_v = dt * a;
+
+  x = x_ + (1.0/6.0) * (k1_x + 2.0*k2_x + 2.0*k3_x + k4_x);
+  v = v_ + (1.0/6.0) * (k1_v + 2.0*k2_v + 2.0*k3_v + k4_v);
+  rho = rho_ana(norm2(x));
+  acceleration(a);
+  t=t+dt;
+  // x = x_ + dt * v;
+  // v = v_ + dt * a;
+  // t=t+dt;
+  // acceleration(a);
   }
 };
 
@@ -254,19 +280,88 @@ class EngineRungeKutta4adaptatif: public Engine
 public:
   EngineRungeKutta4adaptatif(ConfigFile configFile): Engine(configFile) {}
 
+  void rk4(valarray<double>& x_1, valarray<double>& v_1, double t_1, double dt_1, double rho_1, valarray<double>& a_1, double div=1.0)
+  {
+  valarray<double> a = a_1; //TODO écrire RK4 avec rho qui évolue aussi
+  valarray<double> k1_x,k1_v,k2_x,k2_v,k3_x,k3_v,k4_x,k4_v (0.e0,3);
+  valarray<double> x_ = x_1; // position
+  valarray<double> v_ = v_1; // vitesse
+  dt_1 = dt_1 / div;
+	k1_x = dt_1 * v_1;
+	k1_v = dt_1 * a_1;
+
+	x_1 = x_ + 0.5 * k1_x;
+	v_1 = v_ + 0.5 * k1_v;
+  rho_1 = rho_ana(norm2(x_1));
+  acceleration(a); 
+  k2_x = dt_1 * v_1;
+  k2_v = dt_1 * a_1;
+
+  x_1 = x_ + 0.5 * k2_x;
+  v_1 = v_ + 0.5 * k2_v;
+  rho_1 = rho_ana(norm2(x_1));
+  acceleration(a);
+  k3_x = dt_1 * v_1;
+  k3_v = dt_1 * a;
+
+  x_1 = x_ + k3_x;
+  v_1 = v_ + k3_v;
+  rho_1 = rho_ana(norm2(x_1));
+  acceleration(a);
+  k4_x = dt_1 * v_1;
+  k4_v = dt_1 * a_1;
+
+  x_1 = x_ + (1.0/6.0) * (k1_x + 2.0*k2_x + 2.0*k3_x + k4_x);
+  v_1 = v_ + (1.0/6.0) * (k1_v + 2.0*k2_v + 2.0*k3_v + k4_v);
+  rho_1 = rho_ana(norm2(x_1));
+  acceleration(a_1);
+  }
 
   void step()
   {
     valarray<double> a =valarray<double>(0.e0,3); //TODO écrire RK4 avec pas de temps adaptatif
     
-    valarray<double> x_ = x; // position
-    valarray<double> v_ = v; // vitesse
-
-    x+=0.0;
-    v+=0.0;
-
-    t+=dt;
+    valarray<double> x_0 = x; // position 0
+    valarray<double> x_1 = x; // position 1
     
+    valarray<double> v_0 = v; // vitesse 0
+    valarray<double> v_1 = v; // vitesse 1
+    
+    valarray<double> a_0 = a; // accélération 0
+    valarray<double> a_1 = a; // accélération 1
+
+    double dt_1 = dt;
+    
+
+    //rungekutta 4 with adaptative time step
+    rk4(x_0,v_0,t,dt_1,rho,a_0);
+    rk4(x_1,v_1,t,dt_1,rho,a_1,2.0);
+    rk4(x_1,v_1,t,dt_1,rho,a_1,2.0);
+    valarray<double> x_diff = x_1-x_0;
+    double diff = norm2(x_diff);
+    double tol = 1.e0;
+    unsigned int i = 0;
+    while (diff>tol)
+    {
+      x_0 = x;
+      v_0 = v;
+      a_0 = a;
+      x_1 = x;
+      v_1 = v;
+      a_1 = a;
+      dt_1 = dt_1 * 0.999 *pow((tol/diff),(1.0/(1.0+i)));
+      rk4(x_0,v_0,t,dt_1,rho,a_0);
+      rk4(x_1,v_1,t,dt_1,rho,a_1,2.0);
+      rk4(x_1,v_1,t,dt_1,rho,a_1,2.0);
+      x_diff = x_1-x_0;
+      diff = norm2(x_diff);
+      ++i;
+    }
+    x = x_1;
+    v = v_1;
+    t = t + dt_1;
+    rho = rho_ana(norm2(x));
+    acceleration(a);
   }
 };
 
