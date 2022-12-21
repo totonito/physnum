@@ -61,7 +61,6 @@ private:
   double m_a;			// masse du vaisseau Appolo
   double C_x;			// coefficient de trainee
   double d;				// diametre du vaisseau
-  // double K = P_0*pow(rho_0,-1*gamma);
   double dz;
   
   valarray<double> x0 = valarray<double>(0.e0,2); // vecteur contenant la position initiale 
@@ -276,8 +275,14 @@ public:
 
 class EngineRungeKutta4adaptatif: public Engine
 {
+private:
+double tol;           // Tolerance où on réduit le pas de temps pour RK4 adaptatif	
+
 public:
-  EngineRungeKutta4adaptatif(ConfigFile configFile): Engine(configFile) {}
+  EngineRungeKutta4adaptatif(ConfigFile configFile): Engine(configFile) 
+  {
+	  tol    = configFile.get<double>("tol",tol);	  
+  }
 
 
   valarray<double> rk4(const valarray<double>& state, const double& dt_1, const double& div = 1.0)
@@ -326,7 +331,6 @@ public:
     dt_1 = min(dt, t_fin - t);
 
     // Initializing the tolerance
-    double tol = 1.e-6;
     unsigned int i = 0;
     
     vecteur y_0 = rk4(state_0,dt_1);

@@ -53,7 +53,7 @@ protected:
   unsigned int nsteps;  // Nombre de pas
   double rho_0; 	 	// parametre rho à l'altitude 0
   double P_0;			// pression au sol
-  double epsilon;		// décalage pour l'intégration en descente
+  double epsilon_rho;		// décalage pour l'intégration en descente
   double z0;			// position initiale  
   unsigned int sampling;// Nombre de pas de temps entre chaque ecriture des diagnostics
   unsigned int last;    // Nombre de pas de temps depuis la derniere ecriture des diagnostics
@@ -112,7 +112,7 @@ public:
     rho_0    = configFile.get<double>("rho_0",rho_0);
     P_0      = configFile.get<double>("P_0",P_0);
 	gamma	 = configFile.get<double>("gamma",gamma);
-	epsilon  = configFile.get<double>("epsilon",epsilon);
+	epsilon_rho  = configFile.get<double>("epsilon_rho",epsilon_rho);
     sampling = configFile.get<unsigned int>("sampling",sampling); // lire le parametre de sampling 
 
     // Ouverture du fichier de sortie
@@ -189,7 +189,7 @@ public:
   }
     virtual void run() override
   {
-    z = (gamma*P_0/((gamma-1) * rho_0 * g)) - epsilon ;   // initialiser la position
+    z = (gamma*P_0/((gamma-1) * rho_0 * g)) - epsilon_rho ;   // initialiser la position
     dz = z/nsteps;
     rho = rho_ana(z);//initialiser rho
     last = 0; // initialise le parametre d'ecriture
