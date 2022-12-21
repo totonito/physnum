@@ -1,7 +1,7 @@
 % Parameter scan
 % This script is used to scan the parameters of the model
 
-repertoire = './';
+repertoire = '';
 executable = 'Exercice4_Comerre_Vion';
 input = 'configuration.in.example';
 % repertoire = ";%./Users/linleyvion/Desktop/Rapports PhysNum/Exercice 4";

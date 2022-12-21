@@ -346,7 +346,6 @@ public:
       while (diff>tol)
       {
         dt_1 = dt_1 * 0.999 * pow((tol/diff),(1.0/5.0));
-        std::cout << "dt_1 = " << dt_1 << std::endl;
 
         y_0 = rk4(state_0,dt_1);
         y_1 = rk4(state_1,dt_1, 2.0);
